@@ -1,0 +1,166 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <fstream>
+#include <sstream>
+
+using namespace std;
+
+// Struct to store material properties
+struct Material {
+    string name;
+    float density;           // in g/cm³
+    float tensileStrength;   // in MPa
+    float hardness;          // Rockwell scale
+};
+
+// Function to input material data from the user
+void inputMaterials(vector<Material>& materials) {
+    while (true) {
+        string name;
+        float density, tensileStrength, hardness;
+
+        cout << "\nEnter material name (or type 'DONE' to finish): ";
+        cin >> name;
+
+        // Check if user wants to stop input
+        if (name == "DONE" || name == "done") {
+            break;
+        }
+
+        cout << "Enter density (g/cm³): ";
+        cin >> density;
+
+        cout << "Enter tensile strength (MPa): ";
+        cin >> tensileStrength;
+
+        cout << "Enter hardness (Rockwell): ";
+        cin >> hardness;
+
+        // Add the new material to the list
+        materials.push_back({name, density, tensileStrength, hardness});
+    }
+}
+
+// Function to search for a material by its name
+void searchMaterial(const vector<Material>& materials, const string& materialName) {
+    bool found = false;
+    for (const auto& material : materials) {
+        if (material.name == materialName) {
+            cout << "\nMaterial found:\n";
+            cout << "Name: " << material.name << endl;
+            cout << "Density: " << material.density << " g/cm³" << endl;
+            cout << "Tensile Strength: " << material.tensileStrength << " MPa" << endl;
+            cout << "Hardness: " << material.hardness << " Rockwell\n";
+            found = true;
+            break;
+        }
+    }
+
+    if (!found) {
+        cout << "\nMaterial not found.\n";
+    }
+}
+
+// Function to display all materials
+void displayMaterials(const vector<Material>& materials) {
+    if (materials.empty()) {
+        cout << "\nNo materials stored.\n";
+        return;
+    }
+
+    cout << "\nStored Materials:\n";
+    for (const auto& material : materials) {
+        cout << "Name: " << material.name << endl;
+        cout << "Density: " << material.density << " g/cm³" << endl;
+        cout << "Tensile Strength: " << material.tensileStrength << " MPa" << endl;
+        cout << "Hardness: " << material.hardness << " Rockwell\n";
+        cout << "------------------------\n";
+    }
+}
+
+// Function to save material data to a file
+void saveToFile(const vector<Material>& materials, const string& filename) {
+    ofstream outFile(filename);
+
+    if (!outFile) {
+        cout << "\nError: Could not open file for saving.\n";
+        return;
+    }
+
+    for (const auto& material : materials) {
+        outFile << material.name << "," << material.density << ","
+                << material.tensileStrength << "," << material.hardness << "\n";
+    }
+
+    outFile.close();
+    cout << "\nMaterials saved to " << filename << endl;
+}
+
+// Function to load material data from a file
+void loadFromFile(vector<Material>& materials, const string& filename) {
+    ifstream inFile(filename);
+    string line, name;
+    float density, tensileStrength, hardness;
+
+    if (!inFile) {
+        cout << "\nError: File not found.\n";
+        return;
+    }
+
+    materials.clear(); // Clear the current list before loading
+    while (getline(inFile, line)) {
+        stringstream ss(line);
+        getline(ss, name, ',');
+        ss >> density;
+        ss.ignore();
+        ss >> tensileStrength;
+        ss.ignore();
+        ss >> hardness;
+        materials.push_back({name, density, tensileStrength, hardness});
+    }
+
+    inFile.close();
+    cout << "\nMaterials loaded from " << filename << endl;
+}
+
+// Main function
+int main() {
+    vector<Material> materials;
+    string filename = "materials_data.txt";
+    int choice;
+
+    while (true) {
+        cout << "\n====== Material Database ======\n";
+        cout << "1. Add Materials\n";
+        cout << "2. Search Material\n";
+        cout << "3. Display All Materials\n";
+        cout << "4. Save Materials to File\n";
+        cout << "5. Load Materials from File\n";
+        cout << "6. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        if (choice == 1) {
+            inputMaterials(materials);
+        } else if (choice == 2) {
+            string materialName;
+            cout << "\nEnter the name of the material to search: ";
+            cin >> materialName;
+            searchMaterial(materials, materialName);
+        } else if (choice == 3) {
+            displayMaterials(materials);
+        } else if (choice == 4) {
+            saveToFile(materials, filename);
+        } else if (choice == 5) {
+            loadFromFile(materials, filename);
+        } else if (choice == 6) {
+            cout << "\nExiting the program.\n";
+            break;
+        } else {
+            cout << "\nInvalid choice, please try again.\n";
+        }
+    }
+
+    return 0;
+}
